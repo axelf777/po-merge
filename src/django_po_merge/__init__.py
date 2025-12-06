@@ -1,0 +1,1 @@
+from .merger import merge_po_files
