@@ -16,6 +16,10 @@ dev = [
     "pytest>=7.0",
 ]
 
+[project.scripts]
+django-po-merge = "django_po_merge.cli:main"
+django-po-merge-driver = "django_po_merge.driver:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

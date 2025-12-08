@@ -1,0 +1,1 @@
+*.po merge=django-po-merge
