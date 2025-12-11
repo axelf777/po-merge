@@ -1,5 +1,5 @@
 from sys import argv, exit
-from .merger import merge_po_files
+from .merger import merge_po_files, MergeConfig
 
 
 def main():
@@ -11,7 +11,8 @@ def main():
     ours_path = argv[2]
     theirs_path = argv[3]
 
-    exit_code = merge_po_files(base_path, ours_path, theirs_path)
+    config = MergeConfig()
+    exit_code = merge_po_files(base_path, ours_path, theirs_path, config)
     exit(exit_code)
 
 

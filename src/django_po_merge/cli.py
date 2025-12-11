@@ -19,7 +19,7 @@ def get_git_root():
         exit(1)
 
 
-def install_merge_driver():
+def install_merge_driver(strategy='none', prefer_non_fuzzy=True):
     """Configure git to use django-po-merge as a merge driver for .po files."""
     git_root = get_git_root()
 
@@ -34,7 +34,19 @@ def install_merge_driver():
             check=True
         )
 
+        run(
+            ['git', 'config', 'merge.django-po-merge.strategy', strategy],
+            check=True
+        )
+
+        run(
+            ['git', 'config', 'merge.django-po-merge.prefer-non-fuzzy', str(prefer_non_fuzzy).lower()],
+            check=True
+        )
+
         print("Configured git merge driver")
+        print(f"  Strategy: {strategy}")
+        print(f"  Prefer non-fuzzy: {prefer_non_fuzzy}")
     except CalledProcessError as e:
         print(f"Error configuring git: {e}")
         exit(1)
@@ -99,13 +111,26 @@ def main():
     )
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
-    subparsers.add_parser('install', help='Configure git to use django-po-merge for .po files')
+    install_parser = subparsers.add_parser('install', help='Configure git to use django-po-merge for .po files')
+    install_parser.add_argument(
+        '--strategy',
+        choices=['ours', 'theirs', 'none'],
+        default='none',
+        help='Conflict resolution strategy: ours (prefer our changes), theirs (prefer their changes), none (fail on conflicts, default)'
+    )
+    install_parser.add_argument(
+        '--no-prefer-non-fuzzy',
+        action='store_true',
+        help='Disable automatic preference for non-fuzzy translations over fuzzy ones'
+    )
+
     subparsers.add_parser('uninstall', help='Remove django-po-merge configuration from git')
 
     args = parser.parse_args()
 
     if args.command == 'install':
-        install_merge_driver()
+        prefer_non_fuzzy = not args.no_prefer_non_fuzzy
+        install_merge_driver(strategy=args.strategy, prefer_non_fuzzy=prefer_non_fuzzy)
     elif args.command == 'uninstall':
         uninstall_merge_driver()
     else:
