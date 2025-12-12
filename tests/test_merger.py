@@ -11,8 +11,13 @@ def create_po_file(entries, metadata=None):
         po.metadata = metadata
     else:
         po.metadata = {
-            'Content-Type': 'text/plain; charset=UTF-8',
+            'POT-Creation-Date': '2024-01-01 12:00+0000',
+            'PO-Revision-Date': '2024-01-01 12:00+0000',
             'Language': 'sv',
+            'MIME-Version': '1.0',
+            'Content-Type': 'text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding': '8bit',
+            'Plural-Forms': 'nplurals=2; plural=(n != 1);',
         }
 
     for entry in entries:
@@ -449,15 +454,11 @@ def test_active_and_obsolete_same_msgid():
     merged_po = run_merge_test(base, ours, theirs)
 
     current_entries = [e for e in merged_po if e.msgid == 'current']
-    assert len(current_entries) == 2
+    # Active entry should win over obsolete
+    assert len(current_entries) == 1
 
-    active = [e for e in current_entries if not e.obsolete]
-    obsolete = [e for e in current_entries if e.obsolete]
-
-    assert len(active) == 1
-    assert len(obsolete) == 1
-    assert active[0].msgstr == 'nuvarande'
-    assert obsolete[0].msgstr == 'gammal översättning'
+    assert not current_entries[0].obsolete
+    assert current_entries[0].msgstr == 'nuvarande'
 
 
 def test_fuzzy_flag_difference_detected():

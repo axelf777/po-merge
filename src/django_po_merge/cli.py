@@ -18,7 +18,7 @@ def get_git_root():
         exit(1)
 
 
-def install_merge_driver(strategy='none', prefer_non_fuzzy=True):
+def install_merge_driver(strategy='none', prefer_non_fuzzy=True, validate_compiled=True):
     git_root = get_git_root()
 
     try:
@@ -42,9 +42,15 @@ def install_merge_driver(strategy='none', prefer_non_fuzzy=True):
             check=True
         )
 
+        run(
+            ['git', 'config', 'merge.django-po-merge.validate-compiled', str(validate_compiled).lower()],
+            check=True
+        )
+
         print("Configured git merge driver")
         print(f"  Strategy: {strategy}")
         print(f"  Prefer non-fuzzy: {prefer_non_fuzzy}")
+        print(f"  Validate compiled: {validate_compiled}")
     except CalledProcessError as e:
         print(f"Error configuring git: {e}")
         exit(1)
@@ -116,9 +122,14 @@ def main():
         help='Conflict resolution strategy: ours (prefer our changes), theirs (prefer their changes), none (fail on conflicts, default)'
     )
     install_parser.add_argument(
-        '--no-prefer-non-fuzzy',
+        '--no-fuzzy-preference',
         action='store_true',
         help='Disable automatic preference for non-fuzzy translations over fuzzy ones'
+    )
+    install_parser.add_argument(
+        '--skip-validation',
+        action='store_true',
+        help='Skip msgfmt validation of merged PO file'
     )
 
     subparsers.add_parser('uninstall', help='Remove django-po-merge configuration from git')
@@ -126,8 +137,9 @@ def main():
     args = parser.parse_args()
 
     if args.command == 'install':
-        prefer_non_fuzzy = not args.no_prefer_non_fuzzy
-        install_merge_driver(strategy=args.strategy, prefer_non_fuzzy=prefer_non_fuzzy)
+        prefer_non_fuzzy = not args.no_fuzzy_preference
+        validate_compiled = not args.skip_validation
+        install_merge_driver(strategy=args.strategy, prefer_non_fuzzy=prefer_non_fuzzy, validate_compiled=validate_compiled)
     elif args.command == 'uninstall':
         uninstall_merge_driver()
     else:

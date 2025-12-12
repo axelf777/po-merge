@@ -166,16 +166,3 @@ this is not valid syntax
 =======
 # Failed to parse this entry. Please fix the syntax error and resolve manually.
 >>>>>>> THEIRS
-
-
-<<<<<<< COMPILATION ERROR
-3: nplurals = 2...
-100: ...but some messages have 3 plural forms
-3: warning: header field 'Project-Id-Version' missing in header
-3: warning: header field 'Last-Translator' missing in header
-3: warning: header field 'Language-Team' missing in header
-msgfmt: found 1 fatal error
-=======
-# The merged PO file failed compilation validation with msgfmt.
-# Please fix the errors above manually.
->>>>>>> COMPILATION ERROR

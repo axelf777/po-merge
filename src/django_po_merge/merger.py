@@ -1,7 +1,9 @@
 from polib import pofile, POFile
 from subprocess import run, CalledProcessError
 from .parser import parse_po_resilient, format_parse_error_conflict
-
+import sys
+import os
+import re
 
 class UnresolvedConflict(Exception):
     def __init__(self, ours_entry, theirs_entry):
@@ -15,6 +17,8 @@ class MergeConfig:
         self.strategy = self._get_config('merge.django-po-merge.strategy', 'none')
         prefer_non_fuzzy_str = self._get_config('merge.django-po-merge.prefer-non-fuzzy', 'true')
         self.prefer_non_fuzzy = prefer_non_fuzzy_str.lower() == 'true'
+        validate_compiled_str = self._get_config('merge.django-po-merge.validate-compiled', 'true')
+        self.validate_compiled = validate_compiled_str.lower() == 'true'
 
     def _get_config(self, key, default):
         try:
@@ -30,7 +34,7 @@ class MergeConfig:
 
 
 def get_unique_entry_key(entry):
-    return (entry.msgctxt, entry.msgid, entry.obsolete)
+    return (entry.msgctxt, entry.msgid)
 
 
 def entry_to_text(entry):
@@ -54,6 +58,39 @@ def format_merge_conflicts(merge_conflicts):
     return '\n\n'.join(conflicts)
 
 
+def validate_po_compilation(po_file_path):
+    try:
+        result = run(
+            ['msgfmt', '-c', '-o', os.devnull, po_file_path],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if result.returncode != 0:
+            error_output = result.stderr or result.stdout
+            # Remove temp file references, keep just line numbers and messages
+            error_output = re.sub(r'\.merge_file_\w+:', '', error_output)
+            return False, error_output.strip()
+        return True, None
+    except FileNotFoundError:
+        # msgfmt not available, print warning once and skip validation
+        print("Warning: msgfmt not found. Skipping PO file compilation validation.", file=sys.stderr)
+        print("Install GNU gettext tools to enable validation.", file=sys.stderr)
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+
+def format_compilation_error(error_message):
+    return f"""<<<<<<< COMPILATION ERROR
+{error_message}
+=======
+# The merged PO file failed compilation validation with msgfmt.
+# Please fix the errors above manually.
+>>>>>>> COMPILATION ERROR
+    """
+
+
 def merge_po_files(base_path, ours_path, theirs_path, config):
     base_result = parse_po_resilient(base_path)
     ours_result = parse_po_resilient(ours_path)
@@ -65,14 +102,10 @@ def merge_po_files(base_path, ours_path, theirs_path, config):
 
     all_keys = set(base_dict.keys()) | set(ours_dict.keys()) | set(theirs_dict.keys())
 
-    merged_po = POFile()
-    if config.strategy == 'theirs':
-        merged_po.metadata = theirs_result['metadata'] if theirs_result['metadata'] else {}
-    else:
-        merged_po.metadata = ours_result['metadata'] if ours_result['metadata'] else {}
-
     merge_conflicts = []
-    for key in sorted(all_keys, key=lambda x: (x[2], x[1], x[0] or '')):
+    merged_entries = []
+
+    for key in all_keys:
         base_entry = base_dict.get(key)
         ours_entry = ours_dict.get(key)
         theirs_entry = theirs_dict.get(key)
@@ -81,15 +114,35 @@ def merge_po_files(base_path, ours_path, theirs_path, config):
             merged_entry = decide_entry(base_entry, ours_entry, theirs_entry, config)
 
             if merged_entry is not None:
-                merged_po.append(merged_entry)
+                merged_entries.append(merged_entry)
         except UnresolvedConflict as e:
             merge_conflicts.append((e.ours_entry, e.theirs_entry))
+
+    active_entries = [e for e in merged_entries if not e.obsolete]
+    obsolete_entries = [e for e in merged_entries if e.obsolete]
+
+    active_entries.sort(key=lambda e: (e.msgid, e.msgctxt or ''))
+    obsolete_entries.sort(key=lambda e: (e.msgid, e.msgctxt or ''))
+
+    merged_po = POFile()
+    if config.strategy == 'theirs':
+        merged_po.metadata = theirs_result['metadata'] if theirs_result['metadata'] else {}
+    else:
+        merged_po.metadata = ours_result['metadata'] if ours_result['metadata'] else {}
+
+    merged_po.extend(active_entries + obsolete_entries)
 
     try:
         merged_po.save(ours_path)
     except Exception as e:
         print(f"Failed to save merged file: {e}")
         return 1
+
+    compilation_error = None
+    if config.validate_compiled:
+        success, error_msg = validate_po_compilation(ours_path)
+        if not success:
+            compilation_error = error_msg
 
     all_conflict_markers = []
 
@@ -109,9 +162,15 @@ def merge_po_files(base_path, ours_path, theirs_path, config):
             all_conflict_markers.append(parse_markers)
 
     if merge_conflicts:
+        # Sort conflicts for deterministic output
+        merge_conflicts.sort(key=lambda x: (x[0].msgid, x[0].msgctxt or ''))
         merge_markers = format_merge_conflicts(merge_conflicts)
         if merge_markers:
             all_conflict_markers.append(merge_markers)
+
+    if compilation_error:
+        compilation_marker = format_compilation_error(compilation_error)
+        all_conflict_markers.append(compilation_marker)
 
     if all_conflict_markers:
         try:
@@ -174,6 +233,11 @@ def decide_entry(base_entry, ours_entry, theirs_entry, config):
 
 
 def resolve_conflict(ours_entry, theirs_entry, config):
+    if ours_entry.obsolete and not theirs_entry.obsolete:
+        return theirs_entry
+    elif theirs_entry.obsolete and not ours_entry.obsolete:
+        return ours_entry
+
     if config.prefer_non_fuzzy:
         if ours_entry.fuzzy and not theirs_entry.fuzzy:
             return theirs_entry

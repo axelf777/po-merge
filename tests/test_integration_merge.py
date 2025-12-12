@@ -59,7 +59,7 @@ def test_strategy_theirs(tmp_path):
     assert content == expected_content, "Merged output should match expected output for strategy=theirs"
 
 
-def test_strategy_ours_no_prefer_fuzzy(tmp_path):
+def test_strategy_ours_no_fuzzy_preference(tmp_path):
     repo = GitTestRepo(tmp_path)
     repo.set_config('merge.django-po-merge.strategy', 'ours')
     repo.set_config('merge.django-po-merge.prefer-non-fuzzy', 'false')
@@ -76,3 +76,22 @@ def test_strategy_ours_no_prefer_fuzzy(tmp_path):
     expected_content = expected_path.read_text()
 
     assert content == expected_content, "Merged output should match expected output for strategy=ours with prefer-non-fuzzy=false"
+
+
+def test_skip_validation(tmp_path):
+    repo = GitTestRepo(tmp_path)
+    repo.set_config('merge.django-po-merge.strategy', 'ours')
+    repo.set_config('merge.django-po-merge.validate-compiled', 'false')
+
+    setup_git_conflict_scenario(repo)
+
+    success, stdout, stderr = repo.merge('branch-theirs')
+
+    assert not success, "Merge should fail due to parse errors"
+
+    content = repo.get_file_content('locale/sv/LC_MESSAGES/django.po')
+
+    expected_path = Path(__file__).parent / 'fixtures' / 'expected' / 'strategy_ours_skip_validation.po'
+    expected_content = expected_path.read_text()
+
+    assert content == expected_content, "Merged output should match expected output for strategy=ours with validate-compiled=false"

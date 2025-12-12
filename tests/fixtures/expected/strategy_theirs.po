@@ -2,7 +2,12 @@
 msgid ""
 msgstr ""
 "POT-Creation-Date: 2024-01-15 14:00+0000\n"
+"PO-Revision-Date: 2024-01-15 14:00+0000\n"
 "Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "menu"
 msgid "File"
@@ -25,9 +30,6 @@ msgid ""
 msgstr ""
 "Detta är ett väldigt långt meddelande som täcker flera rader och behöver "
 "visas rätt i PO-filformatet"
-
-msgid "active_and_obsolete"
-msgstr "aktiv"
 
 msgid "apple"
 msgstr "äpple"
@@ -97,6 +99,7 @@ msgid "one file"
 msgid_plural "%d files"
 msgstr[0] "en fil"
 msgstr[1] "%d dokument"
+msgstr[2] "invalid plural index"
 
 msgid "one item"
 msgid_plural "%d items"
@@ -156,16 +159,23 @@ msgstr "sebra"
 #~ msgid "obsolete_theirs_only"
 #~ msgstr "föråldrad endast i theirs"
 
-#~ msgid "will_be_obsolete_ours"
-#~ msgstr "kommer bli föråldrad"
 
-#~ msgid "will_be_obsolete_theirs"
-#~ msgstr "kommer bli föråldrad"
-
-
-<<<<<<< PARSE ERROR (THEIRS line 133): Syntax error in po file (line 2)
+<<<<<<< PARSE ERROR (THEIRS line 139): Syntax error in po file (line 2)
 msgid "parse_error_theirs"
 this is not valid syntax
 =======
 # Failed to parse this entry. Please fix the syntax error and resolve manually.
 >>>>>>> THEIRS
+
+
+<<<<<<< COMPILATION ERROR
+3: nplurals = 2...
+100: ...but some messages have 3 plural forms
+3: warning: header field 'Project-Id-Version' missing in header
+3: warning: header field 'Last-Translator' missing in header
+3: warning: header field 'Language-Team' missing in header
+msgfmt: found 1 fatal error
+=======
+# The merged PO file failed compilation validation with msgfmt.
+# Please fix the errors above manually.
+>>>>>>> COMPILATION ERROR
