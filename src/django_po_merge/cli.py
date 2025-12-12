@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 def get_git_root():
-    """Get the root directory of the current git repository."""
     try:
         result = run(
             ['git', 'rev-parse', '--show-toplevel'],
@@ -20,7 +19,6 @@ def get_git_root():
 
 
 def install_merge_driver(strategy='none', prefer_non_fuzzy=True):
-    """Configure git to use django-po-merge as a merge driver for .po files."""
     git_root = get_git_root()
 
     try:
@@ -70,7 +68,6 @@ def install_merge_driver(strategy='none', prefer_non_fuzzy=True):
 
 
 def uninstall_merge_driver():
-    """Remove django-po-merge configuration from git."""
     git_root = get_git_root()
 
     try:

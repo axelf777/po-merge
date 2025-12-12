@@ -5,16 +5,6 @@ from django_po_merge.merger import merge_po_files, MergeConfig
 
 
 def create_po_file(entries, metadata=None):
-    """
-    Helper to create a POFile from POEntry objects.
-
-    Args:
-        entries: list of POEntry objects
-        metadata: optional dict of metadata key-value pairs
-
-    Returns:
-        POFile object
-    """
     po = POFile()
 
     if metadata:
@@ -32,7 +22,6 @@ def create_po_file(entries, metadata=None):
 
 
 def save_po_to_temp(po_file):
-    """Save a POFile to a temporary file and return the path."""
     with NamedTemporaryFile(mode='w', suffix='.po', delete=False) as tmp:
         temp_path = Path(tmp.name)
     po_file.save(str(temp_path))
@@ -40,10 +29,6 @@ def save_po_to_temp(po_file):
 
 
 def run_merge_test(base_entries, ours_entries, theirs_entries, config=None):
-    """
-    Helper to run a merge test with programmatically created PO files.
-    Returns the merged POFile for assertions.
-    """
     base_po = create_po_file(base_entries)
     ours_po = create_po_file(ours_entries)
     theirs_po = create_po_file(theirs_entries)
@@ -68,10 +53,6 @@ def run_merge_test(base_entries, ours_entries, theirs_entries, config=None):
 
 
 def test_new_entries_added_in_different_branches():
-    """
-    Scenario: Both branches add different new entries.
-    Expected: All entries from both branches are included.
-    """
     base = [
         POEntry(msgid='hello', msgstr='hej'),
         POEntry(msgid='goodbye', msgstr='hejdå'),
@@ -102,10 +83,6 @@ def test_new_entries_added_in_different_branches():
 
 
 def create_conflict_scenario():
-    """
-    Helper to create a conflict scenario with various conflict types.
-    Returns (base, ours, theirs) tuple of POEntry lists.
-    """
     base = [
         POEntry(msgid='modified', msgstr='original'),
         POEntry(msgid='one file', msgid_plural='%d files', msgstr_plural={0: 'en fil', 1: '%d filer'}),
@@ -127,10 +104,6 @@ def create_conflict_scenario():
 
 
 def test_strategy_ours_resolves_conflicts():
-    """
-    Scenario: Test that strategy='ours' config resolves various conflict types.
-    Expected: OURS always wins in conflicts (regular translations, new entries, plural forms).
-    """
     base, ours, theirs = create_conflict_scenario()
 
     expected = {
@@ -145,17 +118,12 @@ def test_strategy_ours_resolves_conflicts():
     merged_entries = {entry.msgid: entry.msgstr for entry in merged_po if entry.msgid and entry.msgstr}
     assert merged_entries == expected
 
-    # Check plural forms conflict resolved to ours
     plural_entry = [e for e in merged_po if e.msgid == 'one file'][0]
     assert plural_entry.msgstr_plural[0] == 'ett dokument'
     assert plural_entry.msgstr_plural[1] == '%d filer'
 
 
 def test_strategy_theirs_resolves_conflicts():
-    """
-    Scenario: Test that strategy='theirs' config resolves various conflict types.
-    Expected: THEIRS always wins in conflicts (regular translations, new entries, plural forms).
-    """
     base, ours, theirs = create_conflict_scenario()
 
     expected = {
@@ -170,17 +138,12 @@ def test_strategy_theirs_resolves_conflicts():
     merged_entries = {entry.msgid: entry.msgstr for entry in merged_po if entry.msgid and entry.msgstr}
     assert merged_entries == expected
 
-    # Check plural forms conflict resolved to theirs
     plural_entry = [e for e in merged_po if e.msgid == 'one file'][0]
     assert plural_entry.msgstr_plural[0] == 'en fil'
     assert plural_entry.msgstr_plural[1] == '%d dokument'
 
 
 def test_strategy_none_raises_on_conflicts():
-    """
-    Scenario: Test that strategy='none' config raises exception on conflicts.
-    Expected: Merge fails with helpful error message.
-    """
     base, ours, theirs = create_conflict_scenario()
 
     base_po = create_po_file(base)
@@ -204,10 +167,6 @@ def test_strategy_none_raises_on_conflicts():
 
 
 def test_entry_deleted_in_ours_modified_in_theirs():
-    """
-    Scenario: Entry is deleted in OURS but modified in THEIRS.
-    Expected: THEIRS modification is kept.
-    """
     base = [
         POEntry(msgid='hello', msgstr='hej'),
         POEntry(msgid='old', msgstr='gammal'),
@@ -233,10 +192,6 @@ def test_entry_deleted_in_ours_modified_in_theirs():
 
 
 def test_entry_modified_in_ours_deleted_in_theirs():
-    """
-    Scenario: Entry is modified in OURS but deleted in THEIRS.
-    Expected: OURS modification is kept.
-    """
     base = [
         POEntry(msgid='hello', msgstr='hej'),
         POEntry(msgid='old', msgstr='gammal'),
@@ -262,10 +217,6 @@ def test_entry_modified_in_ours_deleted_in_theirs():
 
 
 def test_entry_deleted_in_both_branches():
-    """
-    Scenario: Entry is deleted in both branches.
-    Expected: Entry stays deleted.
-    """
     base = [
         POEntry(msgid='hello', msgstr='hej'),
         POEntry(msgid='old', msgstr='gammal'),
@@ -289,10 +240,6 @@ def test_entry_deleted_in_both_branches():
 
 
 def test_same_entry_added_with_same_translation():
-    """
-    Scenario: Both branches add the same entry with identical translation.
-    Expected: One copy is kept.
-    """
     base = [
         POEntry(msgid='hello', msgstr='hej'),
     ]
@@ -318,10 +265,6 @@ def test_same_entry_added_with_same_translation():
 
 
 def test_msgctxt_context_handling():
-    """
-    Scenario: Same msgid with different contexts (msgctxt).
-    Expected: Both entries should be preserved as they are different.
-    """
     base = []
 
     ours = [
@@ -342,10 +285,6 @@ def test_msgctxt_context_handling():
 
 
 def test_plural_forms():
-    """
-    Scenario: Entries with plural forms (msgid_plural, msgstr_plural).
-    Expected: Plural forms are correctly merged.
-    """
     base = [
         POEntry(msgid='one file', msgid_plural='%d files', msgstr_plural={0: 'en fil', 1: '%d filer'}),
     ]
@@ -372,10 +311,6 @@ def test_plural_forms():
 
 
 def test_multiline_msgid_msgstr():
-    """
-    Scenario: Entries with multi-line msgid and msgstr.
-    Expected: Multi-line strings are correctly handled.
-    """
     base = []
 
     ours = [
@@ -404,10 +339,6 @@ def test_multiline_msgid_msgstr():
 
 
 def test_metadata_handling():
-    """
-    Scenario: Different metadata in different branches.
-    Expected: OURS metadata is used in the merged result.
-    """
     base_meta = {
         'Content-Type': 'text/plain; charset=UTF-8',
         'Language': 'sv',
@@ -455,10 +386,6 @@ def test_metadata_handling():
 
 
 def test_entry_order_is_normalized():
-    """
-    Scenario: Entries appear in different orders in different branches.
-    Expected: Merged result has entries in sorted order.
-    """
     base = [
         POEntry(msgid='zebra', msgstr='zebra'),
         POEntry(msgid='apple', msgstr='äpple'),
@@ -485,10 +412,6 @@ def test_entry_order_is_normalized():
 
 
 def test_obsolete_entry_preserved():
-    """
-    Scenario: Obsolete entries are preserved during merge.
-    Expected: Obsolete entries from both branches are included.
-    """
     base = [
         POEntry(msgid='hello', msgstr='hej'),
     ]
@@ -513,10 +436,6 @@ def test_obsolete_entry_preserved():
 
 
 def test_active_and_obsolete_same_msgid():
-    """
-    Scenario: Same msgid exists as both active and obsolete entry.
-    Expected: Both entries are preserved (different keys).
-    """
     base = []
 
     ours = [
@@ -542,10 +461,6 @@ def test_active_and_obsolete_same_msgid():
 
 
 def test_fuzzy_flag_difference_detected():
-    """
-    Scenario: Same msgstr but different fuzzy flag.
-    Expected: Entries are considered different.
-    """
     base = [POEntry(msgid='hello', msgstr='hej')]
 
     ours = [POEntry(msgid='hello', msgstr='hej')]
@@ -567,10 +482,6 @@ def test_fuzzy_flag_difference_detected():
 
 
 def test_fuzzy_flag_removed():
-    """
-    Scenario: BASE is fuzzy, one branch removes fuzzy flag.
-    Expected: Non-fuzzy version wins (removing fuzzy is an improvement).
-    """
     base_entry = POEntry(msgid='hello', msgstr='hej')
     base_entry.flags.append('fuzzy')
     base = [base_entry]
@@ -595,11 +506,6 @@ def test_fuzzy_flag_removed():
 
 
 def test_conflict_prefers_non_fuzzy_when_both_add():
-    """
-    Scenario: Both branches add the same entry with different translations.
-              One is fuzzy, one is not.
-    Expected: Non-fuzzy entry wins.
-    """
     base = [POEntry(msgid='hello', msgstr='hej')]
 
     ours_entry = POEntry(msgid='new', msgstr='ny')
@@ -628,11 +534,6 @@ def test_conflict_prefers_non_fuzzy_when_both_add():
 
 
 def test_conflict_prefers_non_fuzzy_when_both_modify():
-    """
-    Scenario: Both branches modify the same entry with different translations.
-              One is fuzzy, one is not.
-    Expected: Non-fuzzy entry wins.
-    """
     base = [POEntry(msgid='hello', msgstr='hej')]
 
     ours_entry = POEntry(msgid='hello', msgstr='hallå')
@@ -654,11 +555,6 @@ def test_conflict_prefers_non_fuzzy_when_both_modify():
 
 
 def test_conflict_both_fuzzy_falls_back_to_strategy():
-    """
-    Scenario: Both branches modify the same entry with different translations.
-              Both are fuzzy, so prefer_non_fuzzy can't help.
-    Expected: Falls back to strategy='ours'.
-    """
     base = [POEntry(msgid='hello', msgstr='hej')]
 
     ours_entry = POEntry(msgid='hello', msgstr='hallå')
@@ -684,11 +580,6 @@ def test_conflict_both_fuzzy_falls_back_to_strategy():
 
 
 def test_prefer_non_fuzzy_disabled():
-    """
-    Scenario: Both branches modify the same entry with different translations.
-              One is fuzzy, one is not, but prefer_non_fuzzy=False.
-    Expected: Falls back to strategy instead of preferring non-fuzzy.
-    """
     base = [POEntry(msgid='hello', msgstr='hej')]
 
     ours_entry = POEntry(msgid='hello', msgstr='hallå')
@@ -714,10 +605,6 @@ def test_prefer_non_fuzzy_disabled():
 
 
 def test_comprehensive_sorting():
-    """
-    Scenario: Mix of active and obsolete entries with various msgids and msgctxts.
-    Expected: Active entries sorted by msgid then msgctxt, obsolete entries at end sorted by msgid.
-    """
     base = []
 
     ours = [

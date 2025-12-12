@@ -1,17 +1,22 @@
 from polib import pofile, POFile
 from subprocess import run, CalledProcessError
+from .parser import parse_po_resilient, format_parse_error_conflict
+
+
+class UnresolvedConflict(Exception):
+    def __init__(self, ours_entry, theirs_entry):
+        self.ours_entry = ours_entry
+        self.theirs_entry = theirs_entry
+        super().__init__(f"Conflict for msgid '{ours_entry.msgid}'")
 
 
 class MergeConfig:
-    """Configuration for merge behavior."""
-
     def __init__(self):
         self.strategy = self._get_config('merge.django-po-merge.strategy', 'none')
         prefer_non_fuzzy_str = self._get_config('merge.django-po-merge.prefer-non-fuzzy', 'true')
         self.prefer_non_fuzzy = prefer_non_fuzzy_str.lower() == 'true'
 
     def _get_config(self, key, default):
-        """Read a git config value with a default fallback."""
         try:
             result = run(
                 ['git', 'config', '--get', key],
@@ -24,49 +29,106 @@ class MergeConfig:
             return default
 
 
-def get_entry_key(entry):
-    """
-    Create a unique key for a PO entry.
-
-    The key includes msgctxt (context), msgid (message), and obsolete flag
-    to ensure entries are uniquely identified even if they have the same
-    msgid but different contexts or obsolete status.
-    """
+def get_unique_entry_key(entry):
     return (entry.msgctxt, entry.msgid, entry.obsolete)
 
 
+def entry_to_text(entry):
+    return str(entry)
+
+
+def format_merge_conflicts(merge_conflicts):
+    if not merge_conflicts:
+        return ""
+
+    conflicts = []
+    for ours_entry, theirs_entry in merge_conflicts:
+        msgid = ours_entry.msgid
+        msgctxt_info = f", msgctxt \"{ours_entry.msgctxt}\"" if ours_entry.msgctxt else ""
+
+        conflict = f"""
+            <<<<<<< MERGE CONFLICT: msgid "{msgid}"{msgctxt_info}
+            {entry_to_text(ours_entry)}
+            =======
+            {entry_to_text(theirs_entry)}
+            >>>>>>> THEIRS
+        """
+
+        conflicts.append(conflict)
+
+    return '\n\n'.join(conflicts)
+
+
 def merge_po_files(base_path, ours_path, theirs_path, config):
-    try:
-        base_po = pofile(base_path)
-        ours_po = pofile(ours_path)
-        theirs_po = pofile(theirs_path)
+    base_result = parse_po_resilient(base_path)
+    ours_result = parse_po_resilient(ours_path)
+    theirs_result = parse_po_resilient(theirs_path)
 
-        base_dict = {get_entry_key(entry): entry for entry in base_po if entry.msgid}
-        ours_dict = {get_entry_key(entry): entry for entry in ours_po if entry.msgid}
-        theirs_dict = {get_entry_key(entry): entry for entry in theirs_po if entry.msgid}
+    base_dict = {get_unique_entry_key(entry): entry for entry in base_result['valid_entries']}
+    ours_dict = {get_unique_entry_key(entry): entry for entry in ours_result['valid_entries']}
+    theirs_dict = {get_unique_entry_key(entry): entry for entry in theirs_result['valid_entries']}
 
-        all_keys = set(base_dict.keys()) | set(ours_dict.keys()) | set(theirs_dict.keys())
+    all_keys = set(base_dict.keys()) | set(ours_dict.keys()) | set(theirs_dict.keys())
 
-        merged_po = POFile()
-        merged_po.metadata = ours_po.metadata
+    merged_po = POFile()
+    if config.strategy == 'theirs':
+        merged_po.metadata = theirs_result['metadata'] if theirs_result['metadata'] else {}
+    else:
+        merged_po.metadata = ours_result['metadata'] if ours_result['metadata'] else {}
 
-        for key in sorted(all_keys, key=lambda x: (x[2], x[1], x[0] or '')):
-            base_entry = base_dict.get(key)
-            ours_entry = ours_dict.get(key)
-            theirs_entry = theirs_dict.get(key)
+    merge_conflicts = []
+    for key in sorted(all_keys, key=lambda x: (x[2], x[1], x[0] or '')):
+        base_entry = base_dict.get(key)
+        ours_entry = ours_dict.get(key)
+        theirs_entry = theirs_dict.get(key)
 
+        try:
             merged_entry = decide_entry(base_entry, ours_entry, theirs_entry, config)
 
             if merged_entry is not None:
                 merged_po.append(merged_entry)
+        except UnresolvedConflict as e:
+            merge_conflicts.append((e.ours_entry, e.theirs_entry))
 
+    try:
         merged_po.save(ours_path)
-
-        return 0
-
     except Exception as e:
-        print(f"Merge failed: {e}")
+        print(f"Failed to save merged file: {e}")
         return 1
+
+    all_conflict_markers = []
+
+    has_parse_failures = (
+        len(base_result['failed_entries']) > 0 or
+        len(ours_result['failed_entries']) > 0 or
+        len(theirs_result['failed_entries']) > 0
+    )
+
+    if has_parse_failures:
+        parse_markers = format_parse_error_conflict(
+            base_result['failed_entries'],
+            ours_result['failed_entries'],
+            theirs_result['failed_entries']
+        )
+        if parse_markers:
+            all_conflict_markers.append(parse_markers)
+
+    if merge_conflicts:
+        merge_markers = format_merge_conflicts(merge_conflicts)
+        if merge_markers:
+            all_conflict_markers.append(merge_markers)
+
+    if all_conflict_markers:
+        try:
+            with open(ours_path, 'a', encoding='utf-8') as f:
+                f.write('\n\n' + '\n\n'.join(all_conflict_markers))
+        except Exception as e:
+            print(f"Failed to write conflict markers: {e}")
+
+    if merge_conflicts or has_parse_failures:
+        return 1
+    else:
+        return 0
 
 
 def decide_entry(base_entry, ours_entry, theirs_entry, config):
@@ -117,17 +179,6 @@ def decide_entry(base_entry, ours_entry, theirs_entry, config):
 
 
 def resolve_conflict(ours_entry, theirs_entry, config):
-    """
-    Resolve a conflict between two entries based on strategy and fuzzy preference.
-
-    If prefer_non_fuzzy is True and one entry is fuzzy while the other isn't,
-    always prefer the non-fuzzy entry.
-
-    Otherwise, apply the strategy:
-    - 'ours': prefer our changes
-    - 'theirs': prefer their changes
-    - 'none': raise an exception (fail the merge)
-    """
     if config.prefer_non_fuzzy:
         if ours_entry.fuzzy and not theirs_entry.fuzzy:
             return theirs_entry
@@ -139,29 +190,12 @@ def resolve_conflict(ours_entry, theirs_entry, config):
     elif config.strategy == 'theirs':
         return theirs_entry
     elif config.strategy == 'none':
-        raise Exception(
-            f"Merge conflict for msgid '{ours_entry.msgid}': "
-            f"both sides modified differently. "
-            f"Run 'django-po-merge install --strategy=ours' or '--strategy=theirs' to resolve automatically."
-        )
+        raise UnresolvedConflict(ours_entry, theirs_entry)
     else:
         raise Exception(f"Unknown strategy: {config.strategy}")
 
 
 def entries_equal(entry1, entry2):
-    """
-    Check if two entries have the same translation content.
-
-    Compares:
-    - msgstr: regular translations
-    - msgstr_plural: plural form translations
-    - fuzzy: whether translation is uncertain/needs review
-
-    Ignores:
-    - occurrences: change with every makemessages run
-    - comments: metadata only
-    - other flags: not semantically important for merge
-    """
     return (
         entry1.msgstr == entry2.msgstr
         and entry1.msgstr_plural == entry2.msgstr_plural
