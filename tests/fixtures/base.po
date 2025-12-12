@@ -1,0 +1,112 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"Language: sv\n"
+
+msgid "hello"
+msgstr "hej"
+
+msgid "goodbye"
+msgstr "hejdå"
+
+msgid "welcome"
+msgstr "välkommen"
+
+msgid "deleted_ours"
+msgstr "original"
+
+msgid "deleted_theirs"
+msgstr "original"
+
+msgid "deleted_both"
+msgstr "försvinner"
+
+msgid "same_change"
+msgstr "original"
+
+msgid "unchanged"
+msgstr "oförändrad"
+
+msgid "ours_only_change"
+msgstr "original"
+
+msgid "theirs_only_change"
+msgstr "original"
+
+msgid "one file"
+msgid_plural "%d files"
+msgstr[0] "en fil"
+msgstr[1] "%d filer"
+
+msgid "one item"
+msgid_plural "%d items"
+msgstr[0] "ett objekt"
+msgstr[1] "%d objekt"
+
+msgid "empty_both_translate"
+msgstr ""
+
+msgid "empty_ours_only"
+msgstr ""
+
+#, fuzzy
+msgid "fuzzy_removed_ours"
+msgstr "suddig"
+
+msgid "fuzzy_added_theirs"
+msgstr "original"
+
+msgid "fuzzy_ours_not_theirs"
+msgstr "original"
+
+msgid "fuzzy_both"
+msgstr "original"
+
+msgid "will_be_obsolete_ours"
+msgstr "kommer bli föråldrad"
+
+msgid "will_be_obsolete_theirs"
+msgstr "kommer bli föråldrad"
+
+msgid "active_and_obsolete"
+msgstr "aktiv"
+
+msgctxt "menu"
+msgid "File"
+msgstr "Arkiv"
+
+msgid "Open"
+msgstr "Öppna"
+
+msgctxt "context1"
+msgid "context_conflict"
+msgstr "original"
+
+msgid "comment_test"
+msgstr "samma översättning"
+
+msgid "flag_test"
+msgstr "samma översättning"
+
+msgid "singular_only"
+msgstr "endast singular"
+
+msgid ""
+"This is a very long message that spans multiple lines and needs to be "
+"displayed properly in the PO file format"
+msgstr "original kort"
+
+msgid "zebra"
+msgstr "sebra"
+
+msgid "apple"
+msgstr "äpple"
+
+msgid "valid_entry_1"
+msgstr "giltig post 1"
+
+msgid "valid_entry_2"
+msgstr "giltig post 2"
+
+msgid "valid_with_error_context"
+msgstr "original"

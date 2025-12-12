@@ -1,0 +1,138 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-01-15 14:00+0000\n"
+"Language: sv\n"
+
+msgid "hello"
+msgstr "tjena"
+
+msgid "goodbye"
+msgstr "farväl"
+
+msgid "welcome"
+msgstr "välkommen till theirs"
+
+msgid "deleted_ours"
+msgstr "uppdaterad i theirs"
+
+msgid "same_change"
+msgstr "samma förändring"
+
+msgid "unchanged"
+msgstr "oförändrad"
+
+msgid "ours_only_change"
+msgstr "original"
+
+msgid "theirs_only_change"
+msgstr "ändrad i theirs"
+
+msgid "one file"
+msgid_plural "%d files"
+msgstr[0] "en fil"
+msgstr[1] "%d dokument"
+
+msgid "one item"
+msgid_plural "%d items"
+msgstr[0] "två objekt"
+msgstr[1] "%d objekt"
+
+msgid "empty_both_translate"
+msgstr "översatt i theirs"
+
+msgid "empty_ours_only"
+msgstr ""
+
+#, fuzzy
+msgid "fuzzy_removed_ours"
+msgstr "suddig"
+
+#, fuzzy
+msgid "fuzzy_added_theirs"
+msgstr "ändrad i theirs"
+
+msgid "fuzzy_ours_not_theirs"
+msgstr "ändrad i theirs"
+
+#, fuzzy
+msgid "fuzzy_both"
+msgstr "ändrad i theirs"
+
+msgid "will_be_obsolete_ours"
+msgstr "kommer bli föråldrad"
+
+#~ msgid "will_be_obsolete_theirs"
+#~ msgstr "kommer bli föråldrad"
+
+msgid "active_and_obsolete"
+msgstr "aktiv"
+
+#~ msgid "obsolete_theirs_only"
+#~ msgstr "föråldrad endast i theirs"
+
+msgctxt "menu"
+msgid "File"
+msgstr "Arkivmeny"
+
+msgid "Open"
+msgstr "Öppna"
+
+msgctxt "theirs_context"
+msgid "Open"
+msgstr "Öppna i theirs kontext"
+
+msgctxt "context1"
+msgid "context_conflict"
+msgstr "ändrad i theirs"
+
+#, c-format
+msgid "comment_test"
+msgstr "samma översättning"
+
+#, c-format
+msgid "flag_test"
+msgstr "samma översättning"
+
+msgid "singular_only"
+msgstr "endast singular"
+
+msgid ""
+"This is a very long message that spans multiple lines and needs to be "
+"displayed properly in the PO file format"
+msgstr ""
+"Detta är ett väldigt långt meddelande som täcker flera rader och behöver "
+"visas rätt i PO-filformatet"
+
+msgid "zebra"
+msgstr "sebra"
+
+msgid "apple"
+msgstr "äpple"
+
+msgctxt "dessert"
+msgid "banana"
+msgstr "banan split"
+
+#~ msgid "obsolete_sort_test"
+#~ msgstr "föråldrad sortering"
+
+msgid "new_both_same"
+msgstr "ny i båda"
+
+msgid "new_both_different"
+msgstr "ny i theirs"
+
+msgid "new_theirs_only"
+msgstr "ny endast i theirs"
+
+msgid "valid_entry_1"
+msgstr "giltig post 1 ändrad"
+
+msgid "valid_entry_2"
+msgstr "giltig post 2"
+
+msgid "parse_error_theirs"
+this is not valid syntax
+
+msgid "valid_with_error_context"
+msgstr "ändrad i theirs"

@@ -1,0 +1,139 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-02-01 10:00+0000\n"
+"Language: sv\n"
+
+msgid "hello"
+msgstr "hallå"
+
+msgid "goodbye"
+msgstr "adjö"
+
+msgid "welcome"
+msgstr "välkommen till ours"
+
+msgid "deleted_theirs"
+msgstr "uppdaterad i ours"
+
+msgid "same_change"
+msgstr "samma förändring"
+
+msgid "unchanged"
+msgstr "oförändrad"
+
+msgid "ours_only_change"
+msgstr "ändrad i ours"
+
+msgid "theirs_only_change"
+msgstr "original"
+
+msgid "one file"
+msgid_plural "%d files"
+msgstr[0] "ett dokument"
+msgstr[1] "%d filer"
+
+msgid "one item"
+msgid_plural "%d items"
+msgstr[0] "ett objekt"
+msgstr[1] "%d nya objekt"
+
+msgid "empty_both_translate"
+msgstr "översatt i ours"
+
+msgid "empty_ours_only"
+msgstr "översatt i ours"
+
+msgid "fuzzy_removed_ours"
+msgstr "suddig"
+
+msgid "fuzzy_added_theirs"
+msgstr "ändrad i ours"
+
+#, fuzzy
+msgid "fuzzy_ours_not_theirs"
+msgstr "ändrad i ours"
+
+#, fuzzy
+msgid "fuzzy_both"
+msgstr "ändrad i ours"
+
+#~ msgid "will_be_obsolete_ours"
+#~ msgstr "kommer bli föråldrad"
+
+msgid "will_be_obsolete_theirs"
+msgstr "kommer bli föråldrad"
+
+msgid "active_and_obsolete"
+msgstr "aktiv"
+
+#~ msgid "active_and_obsolete"
+#~ msgstr "föråldrad version"
+
+#~ msgid "obsolete_ours_only"
+#~ msgstr "föråldrad endast i ours"
+
+msgctxt "menu"
+msgid "File"
+msgstr "Meny Fil"
+
+msgid "Open"
+msgstr "Öppna"
+
+msgctxt "ours_context"
+msgid "Open"
+msgstr "Öppna i ours kontext"
+
+msgctxt "context1"
+msgid "context_conflict"
+msgstr "ändrad i ours"
+
+#, python-format
+msgid "comment_test"
+msgstr "samma översättning"
+
+#, python-format
+msgid "flag_test"
+msgstr "samma översättning"
+
+msgid "singular_only"
+msgid_plural "%d plural"
+msgstr[0] "endast singular"
+msgstr[1] "%d plural"
+
+msgid ""
+"This is a very long message that spans multiple lines and needs to be "
+"displayed properly in the PO file format"
+msgstr ""
+"Detta är ett mycket långt meddelande som sträcker sig över flera rader och "
+"måste visas korrekt i PO-filformatet"
+
+msgid "zebra"
+msgstr "sebra"
+
+msgid "apple"
+msgstr "äpple"
+
+msgctxt "fruit"
+msgid "banana"
+msgstr "banan"
+
+msgid "new_both_same"
+msgstr "ny i båda"
+
+msgid "new_both_different"
+msgstr "ny i ours"
+
+msgid "new_ours_only"
+msgstr "ny endast i ours"
+
+msgid "valid_entry_1"
+msgstr "giltig post 1"
+
+msgid "parse_error_ours"
+msgstr "this string is not closed
+
+msgid "valid_entry_2"
+msgstr "giltig post 2 ändrad"
+
+msgid "valid_with_error_context"
+msgstr "ändrad i ours"
