@@ -43,17 +43,12 @@ def format_merge_conflicts(merge_conflicts):
 
     conflicts = []
     for ours_entry, theirs_entry in merge_conflicts:
-        msgid = ours_entry.msgid
-        msgctxt_info = f", msgctxt \"{ours_entry.msgctxt}\"" if ours_entry.msgctxt else ""
-
-        conflict = f"""
-            <<<<<<< MERGE CONFLICT: msgid "{msgid}"{msgctxt_info}
-            {entry_to_text(ours_entry)}
-            =======
-            {entry_to_text(theirs_entry)}
-            >>>>>>> THEIRS
-        """
-
+        conflict = f"""<<<<<<< MERGE CONFLICT
+{entry_to_text(ours_entry)}
+=======
+{entry_to_text(theirs_entry)}
+>>>>>>> THEIRS
+"""
         conflicts.append(conflict)
 
     return '\n\n'.join(conflicts)

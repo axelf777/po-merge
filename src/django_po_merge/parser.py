@@ -49,7 +49,7 @@ def parse_po_resilient(file_path):
     line_offset = 0
 
     for chunk in entry_chunks:
-        is_metadata = 'msgid ""' in chunk and 'msgstr ""' in chunk
+        is_metadata = 'msgid ""' in chunk and 'msgstr ""' in chunk and not metadata
 
         if is_metadata:
             try:
@@ -110,37 +110,34 @@ def format_parse_error_conflict(base_failed, ours_failed, theirs_failed):
         source_info = ', '.join(sources)
 
         if base_info and ours_info and theirs_info:
-            conflict = f"""
-                <<<<<<< PARSE ERROR ({source_info}): {error}
-                {ours_info[0]}
-                ||||||| BASE
-                {base_info[0]}
-                =======
-                {theirs_info[0]}
-                >>>>>>> PARSE ERROR
-            """
+            conflict = f"""<<<<<<< PARSE ERROR ({source_info}): {error}
+{ours_info[0]}
+||||||| BASE
+{base_info[0]}
+=======
+{theirs_info[0]}
+>>>>>>> PARSE ERROR
+"""
         elif base_info and (ours_info or theirs_info):
             other_info = ours_info if ours_info else theirs_info
             other_label = "OURS" if ours_info else "THEIRS"
-            conflict = f"""
-                <<<<<<< PARSE ERROR ({source_info}): {error}
-                {other_info[0]}
-                ||||||| BASE
-                {base_info[0]}
-                =======
-                # Failed to parse this entry. Please fix the syntax error and resolve manually.
-                >>>>>>> {other_label}
-            """
+            conflict = f"""<<<<<<< PARSE ERROR ({source_info}): {error}
+{other_info[0]}
+||||||| BASE
+{base_info[0]}
+=======
+# Failed to parse this entry. Please fix the syntax error and resolve manually.
+>>>>>>> {other_label}
+"""
         else:
             info = ours_info if ours_info else theirs_info
             label = "OURS" if ours_info else "THEIRS"
-            conflict = f"""
-                <<<<<<< PARSE ERROR ({source_info}): {error}
-                {info[0]}
-                =======
-                # Failed to parse this entry. Please fix the syntax error and resolve manually.
-                >>>>>>> {label}
-            """
+            conflict = f"""<<<<<<< PARSE ERROR ({source_info}): {error}
+{info[0]}
+=======
+# Failed to parse this entry. Please fix the syntax error and resolve manually.
+>>>>>>> {label}
+"""
 
         conflicts.append(conflict)
 
