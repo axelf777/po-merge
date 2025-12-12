@@ -1,0 +1,278 @@
+#
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-02-01 10:00+0000\n"
+"Language: sv\n"
+
+msgid "Open"
+msgstr "Öppna"
+
+msgctxt "ours_context"
+msgid "Open"
+msgstr "Öppna i ours kontext"
+
+msgctxt "theirs_context"
+msgid "Open"
+msgstr "Öppna i theirs kontext"
+
+msgid "active_and_obsolete"
+msgstr "aktiv"
+
+msgid "apple"
+msgstr "äpple"
+
+msgctxt "dessert"
+msgid "banana"
+msgstr "banan split"
+
+msgctxt "fruit"
+msgid "banana"
+msgstr "banan"
+
+msgid "comment_test"
+msgstr "samma översättning"
+
+msgid "deleted_ours"
+msgstr "uppdaterad i theirs"
+
+msgid "deleted_theirs"
+msgstr "uppdaterad i ours"
+
+msgid "empty_ours_only"
+msgstr "översatt i ours"
+
+msgid "flag_test"
+msgstr "samma översättning"
+
+msgid "fuzzy_added_theirs"
+msgstr "ändrad i ours"
+
+msgid "fuzzy_ours_not_theirs"
+msgstr "ändrad i theirs"
+
+msgid "fuzzy_removed_ours"
+msgstr "suddig"
+
+msgid "new_both_same"
+msgstr "ny i båda"
+
+msgid "new_ours_only"
+msgstr "ny endast i ours"
+
+msgid "new_theirs_only"
+msgstr "ny endast i theirs"
+
+msgid "ours_only_change"
+msgstr "ändrad i ours"
+
+msgid "parse_error_ours"
+msgstr "this string is not close"
+
+msgid "same_change"
+msgstr "samma förändring"
+
+msgid "singular_only"
+msgid_plural "%d plural"
+msgstr[0] "endast singular"
+msgstr[1] "%d plural"
+
+msgid "theirs_only_change"
+msgstr "ändrad i theirs"
+
+msgid "unchanged"
+msgstr "oförändrad"
+
+msgid "valid_entry_1"
+msgstr "giltig post 1 ändrad"
+
+msgid "valid_entry_2"
+msgstr "giltig post 2 ändrad"
+
+msgid "will_be_obsolete_ours"
+msgstr "kommer bli föråldrad"
+
+msgid "will_be_obsolete_theirs"
+msgstr "kommer bli föråldrad"
+
+msgid "zebra"
+msgstr "sebra"
+
+#~ msgid "active_and_obsolete"
+#~ msgstr "föråldrad version"
+
+#~ msgid "obsolete_ours_only"
+#~ msgstr "föråldrad endast i ours"
+
+#~ msgid "obsolete_sort_test"
+#~ msgstr "föråldrad sortering"
+
+#~ msgid "obsolete_theirs_only"
+#~ msgstr "föråldrad endast i theirs"
+
+#~ msgid "will_be_obsolete_ours"
+#~ msgstr "kommer bli föråldrad"
+
+#~ msgid "will_be_obsolete_theirs"
+#~ msgstr "kommer bli föråldrad"
+
+
+<<<<<<< PARSE ERROR (THEIRS line 133): Syntax error in po file (line 2)
+msgid "parse_error_theirs"
+this is not valid syntax
+=======
+# Failed to parse this entry. Please fix the syntax error and resolve manually.
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgctxt "menu"
+msgid "File"
+msgstr "Meny Fil"
+
+=======
+msgctxt "menu"
+msgid "File"
+msgstr "Arkivmeny"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid ""
+"This is a very long message that spans multiple lines and needs to be "
+"displayed properly in the PO file format"
+msgstr ""
+"Detta är ett mycket långt meddelande som sträcker sig över flera rader och "
+"måste visas korrekt i PO-filformatet"
+
+=======
+msgid ""
+"This is a very long message that spans multiple lines and needs to be "
+"displayed properly in the PO file format"
+msgstr ""
+"Detta är ett väldigt långt meddelande som täcker flera rader och behöver "
+"visas rätt i PO-filformatet"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgctxt "context1"
+msgid "context_conflict"
+msgstr "ändrad i ours"
+
+=======
+msgctxt "context1"
+msgid "context_conflict"
+msgstr "ändrad i theirs"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "empty_both_translate"
+msgstr "översatt i ours"
+
+=======
+msgid "empty_both_translate"
+msgstr "översatt i theirs"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+#, fuzzy
+msgid "fuzzy_both"
+msgstr "ändrad i ours"
+
+=======
+#, fuzzy
+msgid "fuzzy_both"
+msgstr "ändrad i theirs"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "goodbye"
+msgstr "adjö"
+
+=======
+msgid "goodbye"
+msgstr "farväl"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "hello"
+msgstr "hallå"
+
+=======
+msgid "hello"
+msgstr "tjena"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "new_both_different"
+msgstr "ny i ours"
+
+=======
+msgid "new_both_different"
+msgstr "ny i theirs"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "one file"
+msgid_plural "%d files"
+msgstr[0] "ett dokument"
+msgstr[1] "%d filer"
+
+=======
+msgid "one file"
+msgid_plural "%d files"
+msgstr[0] "en fil"
+msgstr[1] "%d dokument"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "one item"
+msgid_plural "%d items"
+msgstr[0] "ett objekt"
+msgstr[1] "%d nya objekt"
+
+=======
+msgid "one item"
+msgid_plural "%d items"
+msgstr[0] "två objekt"
+msgstr[1] "%d objekt"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "valid_with_error_context"
+msgstr "ändrad i ours"
+
+=======
+msgid "valid_with_error_context"
+msgstr "ändrad i theirs"
+
+>>>>>>> THEIRS
+
+
+<<<<<<< MERGE CONFLICT
+msgid "welcome"
+msgstr "välkommen till ours"
+
+=======
+msgid "welcome"
+msgstr "välkommen till theirs"
+
+>>>>>>> THEIRS

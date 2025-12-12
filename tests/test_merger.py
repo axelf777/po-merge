@@ -500,7 +500,6 @@ def test_fuzzy_flag_removed():
     merged_entries = {entry.msgid: entry.msgstr for entry in merged_po if entry.msgid}
     assert merged_entries == expected
 
-    # OURS changed (removed fuzzy), THEIRS didn't, so OURS wins
     hello_entry = [e for e in merged_po if e.msgid == 'hello'][0]
     assert hello_entry.fuzzy == False
 
@@ -599,7 +598,6 @@ def test_prefer_non_fuzzy_disabled():
     merged_entries = {entry.msgid: entry.msgstr for entry in merged_po if entry.msgid}
     assert merged_entries == expected
 
-    # With prefer_non_fuzzy disabled, fuzzy entry wins via strategy
     hello_entry = [e for e in merged_po if e.msgid == 'hello'][0]
     assert hello_entry.fuzzy == True
 
