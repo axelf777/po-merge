@@ -190,16 +190,14 @@ jobs:
       - name: Rebase PR onto target
         id: rebase
         run: |
+          set -o pipefail
           git checkout "${{ steps.pr.outputs.head_ref }}"
-          git rebase "origin/${{ steps.pr.outputs.base_ref }}"
-
-      - name: Capture conflict files
-        if: failure() && steps.rebase.outcome == 'failure'
-        id: failure-info
-        run: |
-          echo "conflict_files<<EOF" >> $GITHUB_OUTPUT
-          git diff --name-only --diff-filter=U 2>/dev/null || true
-          echo "EOF" >> $GITHUB_OUTPUT
+          git rebase "origin/${{ steps.pr.outputs.base_ref }}" 2>&1 | tee /tmp/rebase.log || {
+            echo "rebase_log<<EOF" >> $GITHUB_OUTPUT
+            cat /tmp/rebase.log >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            exit 1
+          }
 
       - name: Push rebased branch
         run: |
@@ -221,43 +219,42 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const conflictFiles = `${{ steps.failure-info.outputs.conflict_files }}`.trim().split('\n').filter(f => f);
+            const log = `${{ steps.rebase.outputs.rebase_log }}`;
 
-            const poConflicts = conflictFiles.filter(f => f.endsWith('.po'));
-            const otherConflicts = conflictFiles.filter(f => !f.endsWith('.po'));
+            const poMergeConflicts = log.match(/CONFLICT: msgid "(.+?)"/g);
+            const hasParseErrors = log.includes('po-merge: parse errors');
+            const hasValidationError = log.includes('po-merge: merged file failed msgfmt');
+            const hasNonPoConflict = log.includes('CONFLICT') && !poMergeConflicts;
 
             let body = '';
 
-            if (poConflicts.length > 0 && otherConflicts.length === 0) {
+            if (poMergeConflicts && poMergeConflicts.length > 0) {
+              const conflicts = poMergeConflicts.map(c => c.replace('CONFLICT: msgid ', '- ')).join('\n');
               body = [
-                '`.po` file conflicts could not be auto-resolved.',
+                '`.po` conflicts could not be auto-resolved:',
+                '',
+                conflicts,
                 '',
                 'Options:',
                 '- `/po-rebase strategy=ours` - keep your translations',
                 '- `/po-rebase strategy=theirs` - use target branch translations',
                 '- Fix manually and push',
-                '',
-                `[Workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               ].join('\n');
-            } else if (otherConflicts.length > 0) {
-              const fileList = otherConflicts.slice(0, 5).map(f => `- \`${f}\``).join('\n');
-              const more = otherConflicts.length > 5 ? `\n- ... and ${otherConflicts.length - 5} more` : '';
+            } else if (hasParseErrors) {
+              body = 'Rebase failed: po-merge could not parse one or more input files.';
+            } else if (hasValidationError) {
+              body = 'Rebase failed: merged .po file failed msgfmt validation.';
+            } else if (hasNonPoConflict) {
               body = [
-                'Rebase failed due to conflicts in non-`.po` files:',
-                '',
-                fileList + more,
+                'Rebase failed due to conflicts in non-`.po` files.',
                 '',
                 'Please resolve these conflicts manually first, then try again.',
-                '',
-                `[Workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               ].join('\n');
             } else {
-              body = [
-                'Rebase failed unexpectedly.',
-                '',
-                `[Check workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
-              ].join('\n');
+              body = 'Rebase failed unexpectedly.';
             }
+
+            body += `\n\n[Workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
