@@ -1,7 +1,7 @@
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from polib import POFile, POEntry, pofile
-from django_po_merge.merger import merge_po_files, MergeConfig
+from po_merge.merger import merge_po_files, MergeConfig
 
 
 def create_po_file(entries, metadata=None):

@@ -23,27 +23,27 @@ def install_merge_driver(strategy='none', prefer_non_fuzzy=True, validate_compil
 
     try:
         run(
-            ['git', 'config', 'merge.django-po-merge.name', 'Django PO file merge driver'],
+            ['git', 'config', 'merge.po-merge.name', 'PO file merge driver'],
             check=True
         )
 
         run(
-            ['git', 'config', 'merge.django-po-merge.driver', 'django-po-merge-driver %O %A %B'],
+            ['git', 'config', 'merge.po-merge.driver', 'po-merge-driver %O %A %B'],
             check=True
         )
 
         run(
-            ['git', 'config', 'merge.django-po-merge.strategy', strategy],
+            ['git', 'config', 'merge.po-merge.strategy', strategy],
             check=True
         )
 
         run(
-            ['git', 'config', 'merge.django-po-merge.prefer-non-fuzzy', str(prefer_non_fuzzy).lower()],
+            ['git', 'config', 'merge.po-merge.prefer-non-fuzzy', str(prefer_non_fuzzy).lower()],
             check=True
         )
 
         run(
-            ['git', 'config', 'merge.django-po-merge.validate-compiled', str(validate_compiled).lower()],
+            ['git', 'config', 'merge.po-merge.validate-compiled', str(validate_compiled).lower()],
             check=True
         )
 
@@ -56,7 +56,7 @@ def install_merge_driver(strategy='none', prefer_non_fuzzy=True, validate_compil
         exit(1)
 
     gitattributes_path = git_root / '.gitattributes'
-    pattern = '*.po merge=django-po-merge\n'
+    pattern = '*.po merge=po-merge\n'
 
     if gitattributes_path.exists():
         content = gitattributes_path.read_text()
@@ -70,7 +70,7 @@ def install_merge_driver(strategy='none', prefer_non_fuzzy=True, validate_compil
         gitattributes_path.write_text(pattern)
         print("Created .gitattributes")
 
-    print("\nSuccessfully installed django-po-merge")
+    print("\nSuccessfully installed po-merge")
 
 
 def uninstall_merge_driver():
@@ -78,11 +78,11 @@ def uninstall_merge_driver():
 
     try:
         run(
-            ['git', 'config', '--unset', 'merge.django-po-merge.name'],
+            ['git', 'config', '--unset', 'merge.po-merge.name'],
             check=True
         )
         run(
-            ['git', 'config', '--unset', 'merge.django-po-merge.driver'],
+            ['git', 'config', '--unset', 'merge.po-merge.driver'],
             check=True
         )
         print("Removed git merge driver configuration")
@@ -90,7 +90,7 @@ def uninstall_merge_driver():
         print("Git merge driver configuration not found")
 
     gitattributes_path = git_root / '.gitattributes'
-    pattern = '*.po merge=django-po-merge'
+    pattern = '*.po merge=po-merge'
 
     if gitattributes_path.exists():
         content = gitattributes_path.read_text()
@@ -104,17 +104,17 @@ def uninstall_merge_driver():
             gitattributes_path.unlink()
             print("Removed .gitattributes")
 
-    print("\nSuccessfully uninstalled django-po-merge")
+    print("\nSuccessfully uninstalled po-merge")
 
 
 def main():
     parser = ArgumentParser(
-        description='Django PO file merge driver',
-        prog='django-po-merge'
+        description='PO file merge driver',
+        prog='po-merge'
     )
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
-    install_parser = subparsers.add_parser('install', help='Configure git to use django-po-merge for .po files')
+    install_parser = subparsers.add_parser('install', help='Configure git to use po-merge for .po files')
     install_parser.add_argument(
         '--strategy',
         choices=['ours', 'theirs', 'none'],
@@ -132,7 +132,7 @@ def main():
         help='Skip msgfmt validation of merged PO file'
     )
 
-    subparsers.add_parser('uninstall', help='Remove django-po-merge configuration from git')
+    subparsers.add_parser('uninstall', help='Remove po-merge configuration from git')
 
     args = parser.parse_args()
 

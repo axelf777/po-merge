@@ -4,7 +4,7 @@ from .git_helpers import GitTestRepo, setup_git_conflict_scenario
 
 def test_strategy_none(tmp_path):
     repo = GitTestRepo(tmp_path)
-    repo.set_config('merge.django-po-merge.strategy', 'none')
+    repo.set_config('merge.po-merge.strategy', 'none')
 
     setup_git_conflict_scenario(repo)
 
@@ -25,7 +25,7 @@ def test_strategy_none(tmp_path):
 
 def test_strategy_ours(tmp_path):
     repo = GitTestRepo(tmp_path)
-    repo.set_config('merge.django-po-merge.strategy', 'ours')
+    repo.set_config('merge.po-merge.strategy', 'ours')
 
     setup_git_conflict_scenario(repo)
 
@@ -43,7 +43,7 @@ def test_strategy_ours(tmp_path):
 
 def test_strategy_theirs(tmp_path):
     repo = GitTestRepo(tmp_path)
-    repo.set_config('merge.django-po-merge.strategy', 'theirs')
+    repo.set_config('merge.po-merge.strategy', 'theirs')
 
     setup_git_conflict_scenario(repo)
 
@@ -61,8 +61,8 @@ def test_strategy_theirs(tmp_path):
 
 def test_strategy_ours_no_fuzzy_preference(tmp_path):
     repo = GitTestRepo(tmp_path)
-    repo.set_config('merge.django-po-merge.strategy', 'ours')
-    repo.set_config('merge.django-po-merge.prefer-non-fuzzy', 'false')
+    repo.set_config('merge.po-merge.strategy', 'ours')
+    repo.set_config('merge.po-merge.prefer-non-fuzzy', 'false')
 
     setup_git_conflict_scenario(repo)
 
@@ -80,8 +80,8 @@ def test_strategy_ours_no_fuzzy_preference(tmp_path):
 
 def test_skip_validation(tmp_path):
     repo = GitTestRepo(tmp_path)
-    repo.set_config('merge.django-po-merge.strategy', 'ours')
-    repo.set_config('merge.django-po-merge.validate-compiled', 'false')
+    repo.set_config('merge.po-merge.strategy', 'ours')
+    repo.set_config('merge.po-merge.validate-compiled', 'false')
 
     setup_git_conflict_scenario(repo)
 

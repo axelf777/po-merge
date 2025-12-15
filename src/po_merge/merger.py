@@ -14,10 +14,10 @@ class UnresolvedConflict(Exception):
 
 class MergeConfig:
     def __init__(self):
-        self.strategy = self._get_config('merge.django-po-merge.strategy', 'none')
-        prefer_non_fuzzy_str = self._get_config('merge.django-po-merge.prefer-non-fuzzy', 'true')
+        self.strategy = self._get_config('merge.po-merge.strategy', 'none')
+        prefer_non_fuzzy_str = self._get_config('merge.po-merge.prefer-non-fuzzy', 'true')
         self.prefer_non_fuzzy = prefer_non_fuzzy_str.lower() == 'true'
-        validate_compiled_str = self._get_config('merge.django-po-merge.validate-compiled', 'true')
+        validate_compiled_str = self._get_config('merge.po-merge.validate-compiled', 'true')
         self.validate_compiled = validate_compiled_str.lower() == 'true'
 
     def _get_config(self, key, default):
@@ -162,7 +162,6 @@ def merge_po_files(base_path, ours_path, theirs_path, config):
             all_conflict_markers.append(parse_markers)
 
     if merge_conflicts:
-        # Sort conflicts for deterministic output
         merge_conflicts.sort(key=lambda x: (x[0].msgid, x[0].msgctxt or ''))
         merge_markers = format_merge_conflicts(merge_conflicts)
         if merge_markers:

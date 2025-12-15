@@ -4,7 +4,7 @@ from .merger import merge_po_files, MergeConfig
 
 def main():
     if len(argv) != 4:
-        print("Usage: django-po-merge-driver <base> <ours> <theirs>")
+        print("Usage: po-merge-driver <base> <ours> <theirs>")
         exit(1)
 
     base_path = argv[1]

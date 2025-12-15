@@ -1,0 +1,157 @@
+# GitHub Actions bot for po-merge
+#
+# To use in another repo, copy this file to .github/workflows/
+# and change the "Install po-merge" step to: pip install git+https://github.com/user/po-merge.git
+#
+# Commands (as PR comments):
+#   /po-merge  - Merge PR to target branch, resolving .po conflicts
+#   /po-rebase - Rebase PR onto target branch, resolving .po conflicts
+#
+# Requirements:
+#   - The workflow needs write access to push to branches
+#   - Uses the default GITHUB_TOKEN (or configure a PAT for more permissions)
+
+name: po-merge-bot
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  po-merge:
+    # Only run on PR comments (not issue comments) with our commands
+    if: |
+      github.event.issue.pull_request &&
+      (contains(github.event.comment.body, '/po-merge') || contains(github.event.comment.body, '/po-rebase'))
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get PR info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('head_ref', pr.data.head.ref);
+            core.setOutput('head_sha', pr.data.head.sha);
+            core.setOutput('base_ref', pr.data.base.ref);
+            core.setOutput('pr_number', context.issue.number);
+
+            const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.actor
+            });
+            const canWrite = ['admin', 'write'].includes(permission.data.permission);
+            core.setOutput('can_write', canWrite);
+
+      - name: Check permissions
+        if: steps.pr.outputs.can_write != 'true'
+        run: |
+          echo "User does not have write permission"
+          exit 1
+
+      - name: Add reaction to comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install po-merge
+        run: pip install .  # Install from current repo. For other repos use: pip install git+https://github.com/user/po-merge.git
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Configure po-merge as the merge driver
+          git config merge.po-merge.name "PO file merge driver"
+          git config merge.po-merge.driver "po-merge-driver %O %A %B"
+
+          # Apply to all .po files
+          echo "*.po merge=po-merge" >> .gitattributes
+
+      - name: Determine command
+        id: command
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          if [[ "$COMMENT" == *"/po-rebase"* ]]; then
+            echo "action=rebase" >> $GITHUB_OUTPUT
+          elif [[ "$COMMENT" == *"/po-merge"* ]]; then
+            echo "action=merge" >> $GITHUB_OUTPUT
+          fi
+
+      # === REBASE PATH ===
+      - name: Rebase PR onto target
+        if: steps.command.outputs.action == 'rebase'
+        run: |
+          git checkout ${{ steps.pr.outputs.head_ref }}
+          git rebase origin/${{ steps.pr.outputs.base_ref }}
+
+      - name: Push rebased branch
+        if: steps.command.outputs.action == 'rebase'
+        run: |
+          git push --force-with-lease origin ${{ steps.pr.outputs.head_ref }}
+
+      # === MERGE PATH ===
+      - name: Merge PR to target
+        if: steps.command.outputs.action == 'merge'
+        run: |
+          git checkout ${{ steps.pr.outputs.base_ref }}
+          git merge --no-ff ${{ steps.pr.outputs.head_ref }} \
+            -m "Merge pull request #${{ steps.pr.outputs.pr_number }} from ${{ steps.pr.outputs.head_ref }}"
+
+      - name: Push to target branch
+        if: steps.command.outputs.action == 'merge'
+        run: |
+          git push origin ${{ steps.pr.outputs.base_ref }}
+
+      - name: Comment success
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const action = '${{ steps.command.outputs.action }}';
+            const message = action === 'rebase'
+              ? 'Rebased onto `${{ steps.pr.outputs.base_ref }}` with po-merge. You can now merge normally.'
+              : 'Merged to `${{ steps.pr.outputs.base_ref }}` with po-merge.';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: message
+            });
+
+      - name: Comment failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'po-merge failed. There may be non-.po conflicts that need manual resolution. Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).'
+            });

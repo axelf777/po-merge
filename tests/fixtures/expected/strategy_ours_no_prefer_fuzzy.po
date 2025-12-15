@@ -180,3 +180,4 @@ msgfmt: found 1 fatal error
 # The merged PO file failed compilation validation with msgfmt.
 # Please fix the errors above manually.
 >>>>>>> COMPILATION ERROR
+    

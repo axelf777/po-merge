@@ -1,6 +1,7 @@
 from subprocess import run
 from pathlib import Path
 import os
+import sys
 
 
 class GitTestRepo:
@@ -17,8 +18,8 @@ class GitTestRepo:
         project_root = Path(__file__).parent.parent
 
         self._run_git([
-            'config', 'merge.django-po-merge.driver',
-            f'python -m django_po_merge.driver %O %A %B'
+            'config', 'merge.po-merge.driver',
+            f'{sys.executable} -m po_merge.driver %O %A %B'
         ])
 
         src_path = project_root / 'src'
@@ -28,7 +29,7 @@ class GitTestRepo:
             os.environ['PYTHONPATH'] = str(src_path)
 
         gitattributes = self.repo_dir / '.gitattributes'
-        gitattributes.write_text('*.po merge=django-po-merge\n')
+        gitattributes.write_text('*.po merge=po-merge\n')
 
     def _run_git(self, args, check=True):
         result = run(

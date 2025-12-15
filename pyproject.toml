@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "django-po-merge"
+name = "po-merge"
 version = "0.1.0"
-description = "Git merge driver for Django .po translation files"
+description = "Git merge driver for .po translation files"
 requires-python = ">=3.12"
 dependencies = [
     "polib>=1.2.0",
@@ -17,8 +17,8 @@ dev = [
 ]
 
 [project.scripts]
-django-po-merge = "django_po_merge.cli:main"
-django-po-merge-driver = "django_po_merge.driver:main"
+po-merge = "po_merge.cli:main"
+po-merge-driver = "po_merge.driver:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
