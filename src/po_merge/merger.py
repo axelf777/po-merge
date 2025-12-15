@@ -178,6 +178,15 @@ def merge_po_files(base_path, ours_path, theirs_path, config):
         except Exception as e:
             print(f"Failed to write conflict markers: {e}")
 
+    if merge_conflicts:
+        print(f"po-merge: {len(merge_conflicts)} conflict(s)")
+        for ours_entry, theirs_entry in merge_conflicts:
+            print(f"  CONFLICT: msgid \"{ours_entry.msgid}\"")
+    if has_parse_failures:
+        print("po-merge: parse errors in input files")
+    if compilation_error:
+        print("po-merge: merged file failed msgfmt validation")
+
     if merge_conflicts or has_parse_failures or compilation_error:
         return 1
     else:
