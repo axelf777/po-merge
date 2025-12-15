@@ -178,7 +178,7 @@ def merge_po_files(base_path, ours_path, theirs_path, config):
         except Exception as e:
             print(f"Failed to write conflict markers: {e}")
 
-    if merge_conflicts or has_parse_failures:
+    if merge_conflicts or has_parse_failures or compilation_error:
         return 1
     else:
         return 0
