@@ -20,6 +20,9 @@ msgstr ""
 msgid "Booking failed"
 msgstr "Bokning misslyckades"
 
+msgid "Master added this entry"
+msgstr "Master la till denna post"
+
 msgid "no available workers"
 msgstr "inga hantverkare tillgängliga"
 
@@ -53,6 +56,9 @@ msgstr "Verktyg"
 
 msgid "Search"
 msgstr "Sök"
+
+msgid "Another master entry"
+msgstr "En annan master-post"
 
 msgid "Staff user"
 msgstr "Admin-användare"
