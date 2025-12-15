@@ -18,7 +18,7 @@ msgstr ""
 "X-Generator: Poedit 2.4.2\n"
 
 msgid "Booking failed"
-msgstr "Bokning misslyckades"
+msgstr "Bokning gick fel"
 
 msgid "Master added this entry"
 msgstr "Master la till denna post"
@@ -40,7 +40,7 @@ msgstr ""
 "utvecklarna och kommer tittas på så fort som möjligt."
 
 msgid "Projects"
-msgstr "Projekt"
+msgstr "Alla projekt"
 
 msgid "Customers"
 msgstr "Kunder"
