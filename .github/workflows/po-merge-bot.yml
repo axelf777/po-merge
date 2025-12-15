@@ -7,10 +7,12 @@ on:
     types: [opened, synchronize]
   push:
     branches: [master, main]
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   conflict-check:
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -142,6 +144,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
 
       - name: Set up Python
         uses: actions/setup-python@v5
