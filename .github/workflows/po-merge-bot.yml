@@ -1,16 +1,3 @@
-# GitHub Actions bot for po-merge
-#
-# To use in another repo, copy this file to .github/workflows/
-# and change the "Install po-merge" step to: pip install git+https://github.com/user/po-merge.git
-#
-# Commands (as PR comments):
-#   /po-merge  - Merge PR to target branch, resolving .po conflicts
-#   /po-rebase - Rebase PR onto target branch, resolving .po conflicts
-#
-# Requirements:
-#   - The workflow needs write access to push to branches
-#   - Uses the default GITHUB_TOKEN (or configure a PAT for more permissions)
-
 name: po-merge-bot
 
 on:
@@ -22,7 +9,6 @@ on:
     branches: [master, main]
 
 jobs:
-  # Check for .po conflicts and suggest using the bot
   conflict-check:
     if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -35,7 +21,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Get all open PRs
             const prs = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -47,7 +32,6 @@ jobs:
             for (const pr of prs.data) {
               console.log(`Checking PR #${pr.number}: ${pr.title}`);
 
-              // Get fresh PR data to check mergeable state
               const prData = await github.rest.pulls.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -56,14 +40,11 @@ jobs:
 
               console.log(`  mergeable: ${prData.data.mergeable}, mergeable_state: ${prData.data.mergeable_state}`);
 
-              // Skip if mergeable or unknown (null means GitHub is still calculating)
-              // mergeable_state 'dirty' means there are conflicts
               if (prData.data.mergeable_state !== 'dirty') {
                 console.log(`  Skipping - no conflicts`);
                 continue;
               }
 
-              // Check if PR modifies any .po files
               const files = await github.rest.pulls.listFiles({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -75,7 +56,6 @@ jobs:
                 continue;
               }
 
-              // Check if we already commented
               const comments = await github.rest.issues.listComments({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -91,13 +71,10 @@ jobs:
                 continue;
               }
 
-              // Post helpful comment
               const body = [
                 'This PR has conflicts in `.po` translation files.',
                 '',
-                'I can help fix this! Just comment one of:',
-                `- \`/po-rebase\` - Rebase this branch onto \`${prData.data.base.ref}\` (recommended)`,
-                `- \`/po-merge\` - Merge directly to \`${prData.data.base.ref}\``
+                `Comment \`/po-rebase\` to rebase onto \`${prData.data.base.ref}\` and auto-resolve .po conflicts.`
               ].join('\n');
 
               await github.rest.issues.createComment({
@@ -110,11 +87,10 @@ jobs:
               console.log(`Commented on PR #${pr.number}`);
             }
 
-  po-merge:
-    # Only run on PR comments (not issue comments) with our commands
+  po-rebase:
     if: |
       github.event.issue.pull_request &&
-      (contains(github.event.comment.body, '/po-merge') || contains(github.event.comment.body, '/po-rebase'))
+      contains(github.event.comment.body, '/po-rebase')
 
     runs-on: ubuntu-latest
     permissions:
@@ -175,70 +151,60 @@ jobs:
           python-version: "3.12"
 
       - name: Install po-merge
-        run: pip install .  # Install from current repo. For other repos use: pip install git+https://github.com/user/po-merge.git
+        run: pip install .
 
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Configure po-merge as the merge driver
           git config merge.po-merge.name "PO file merge driver"
           git config merge.po-merge.driver "po-merge-driver %O %A %B"
 
-          # Apply to all .po files (use .git/info/attributes to avoid modifying working tree)
           mkdir -p .git/info
           echo "*.po merge=po-merge" >> .git/info/attributes
 
-      - name: Determine command
-        id: command
+      - name: Parse options from comment
+        id: options
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          if [[ "$COMMENT" == *"/po-rebase"* ]]; then
-            echo "action=rebase" >> $GITHUB_OUTPUT
-          elif [[ "$COMMENT" == *"/po-merge"* ]]; then
-            echo "action=merge" >> $GITHUB_OUTPUT
+
+          # Extract strategy=<value>
+          if [[ "$COMMENT" =~ strategy=(none|ours|theirs) ]]; then
+            echo "Found strategy=${BASH_REMATCH[1]}"
+            git config merge.po-merge.strategy "${BASH_REMATCH[1]}"
           fi
 
-      # === REBASE PATH ===
+          # Extract prefer-non-fuzzy=<value>
+          if [[ "$COMMENT" =~ prefer-non-fuzzy=(true|false) ]]; then
+            echo "Found prefer-non-fuzzy=${BASH_REMATCH[1]}"
+            git config merge.po-merge.prefer-non-fuzzy "${BASH_REMATCH[1]}"
+          fi
+
+          # Extract validate-compiled=<value>
+          if [[ "$COMMENT" =~ validate-compiled=(true|false) ]]; then
+            echo "Found validate-compiled=${BASH_REMATCH[1]}"
+            git config merge.po-merge.validate-compiled "${BASH_REMATCH[1]}"
+          fi
+
       - name: Rebase PR onto target
-        if: steps.command.outputs.action == 'rebase'
         run: |
           git checkout ${{ steps.pr.outputs.head_ref }}
           git rebase origin/${{ steps.pr.outputs.base_ref }}
 
       - name: Push rebased branch
-        if: steps.command.outputs.action == 'rebase'
         run: |
           git push --force-with-lease origin ${{ steps.pr.outputs.head_ref }}
-
-      # === MERGE PATH ===
-      - name: Merge PR to target
-        if: steps.command.outputs.action == 'merge'
-        run: |
-          git checkout ${{ steps.pr.outputs.base_ref }}
-          git merge --no-ff ${{ steps.pr.outputs.head_ref }} \
-            -m "Merge pull request #${{ steps.pr.outputs.pr_number }} from ${{ steps.pr.outputs.head_ref }}"
-
-      - name: Push to target branch
-        if: steps.command.outputs.action == 'merge'
-        run: |
-          git push origin ${{ steps.pr.outputs.base_ref }}
 
       - name: Comment success
         uses: actions/github-script@v7
         with:
           script: |
-            const action = '${{ steps.command.outputs.action }}';
-            const message = action === 'rebase'
-              ? 'Rebased onto `${{ steps.pr.outputs.base_ref }}` with po-merge. You can now merge normally.'
-              : 'Merged to `${{ steps.pr.outputs.base_ref }}` with po-merge.';
-
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: message
+              body: 'Rebased onto `${{ steps.pr.outputs.base_ref }}` with po-merge. You can now merge normally.'
             });
 
       - name: Comment failure
@@ -250,5 +216,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: 'po-merge failed. There may be non-.po conflicts that need manual resolution. Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).'
+              body: 'Rebase failed. There may be non-.po conflicts that need manual resolution. Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).'
             });
